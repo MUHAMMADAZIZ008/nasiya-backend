@@ -48,7 +48,7 @@ export class AuthService {
       secret: config.REFRESH_TOKEN_KEY,
       expiresIn: config.REFRESH_TOKEN_TIME,
     });
-    const { hashed_password, ...store} = currentStore.data;
+    const { hashed_password, ...store } = currentStore.data;
     this.writeToCookie(refreshToken, res);
     return {
       accessToken,
@@ -58,7 +58,7 @@ export class AuthService {
   }
 
   findOne(id: string) {
-    return this.storeService.findOne(id);
+    return this.storeService.findProfile(id);
   }
 
   async refreshToken(refreshToken: string) {

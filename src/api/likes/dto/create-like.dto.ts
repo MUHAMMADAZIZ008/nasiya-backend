@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { IsOptional, IsUUID } from 'class-validator';
 
 export class CreateLikeDto {
   @ApiProperty({
@@ -7,7 +7,8 @@ export class CreateLikeDto {
     example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   })
   @IsUUID()
-  store: string;
+  @IsOptional()
+  store?: string;
 
   @ApiProperty({
     description: 'Debtor ID',

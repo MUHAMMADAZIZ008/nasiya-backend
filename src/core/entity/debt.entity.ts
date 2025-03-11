@@ -13,6 +13,9 @@ export class Debt extends BaseModel {
   @Column()
   total_month: DebtPeriod;
 
+  @Column()
+  debt_name: string;
+
   @Column({ type: 'date' })
   next_payment_date: Date;
 

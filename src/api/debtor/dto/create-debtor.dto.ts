@@ -28,7 +28,6 @@ export class CreateDebtorDto {
     description: 'Description of the debtor',
   })
   @IsString()
-  @IsOptional()
   description: string;
 
   @ApiPropertyOptional({ description: 'Store ID associated with the debtor' })
@@ -44,7 +43,7 @@ export class CreateDebtorDto {
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(3)
-  @Matches(/^(\+998|998|8)?(33|71|90|91|93|94|95|97|98|99)\d{7}$/, {
+  @Matches(/^(\+998|998|8)?(33|71|90|91|93|94|95|97|98|99|88)\d{7}$/, {
     each: true,
     message: 'Each phone number must be a valid Uzbekistan phone number',
   })

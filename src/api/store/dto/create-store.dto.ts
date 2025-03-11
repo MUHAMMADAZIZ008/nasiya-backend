@@ -3,6 +3,7 @@ import {
   IsEmail,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Min,
   MinLength,
@@ -57,4 +58,8 @@ export class CreateStoresDto {
   @IsNotEmpty()
   @Min(0)
   pin_code: number;
+
+  @IsOptional()
+  image: string;
+
 }

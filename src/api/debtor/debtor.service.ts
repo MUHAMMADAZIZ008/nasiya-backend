@@ -33,11 +33,8 @@ export class DebtorService extends BaseService<
     message: string;
     data: DeepPartial<Debtor>;
   }> {
-    console.log(dto)
     const newDebtor = this.getRepository.create(dto);
     await this.getRepository.save(newDebtor);
-
-    console.log(newDebtor)
 
     const phoneTransaction =
       this.phoneRepo.manager.connection.createQueryRunner();
@@ -45,8 +42,6 @@ export class DebtorService extends BaseService<
     await phoneTransaction.connect();
     await phoneTransaction.startTransaction();
 
-
-    console.log(newDebtor);
     try {
       for (const phone_number of dto.phone_numbers) {
         const newPhone = this.phoneRepo.create({
@@ -54,7 +49,6 @@ export class DebtorService extends BaseService<
           phone_number: phone_number,
         });
         await phoneTransaction.manager.save(newPhone);
-        console.log(newPhone)
       }
 
       await phoneTransaction.commitTransaction();
@@ -116,8 +110,6 @@ export class DebtorService extends BaseService<
   }> {
     const allDebtors = await this.getRepository.find(options);
 
-
-
     return {
       status_code: 200,
       message: 'success',
@@ -134,11 +126,24 @@ export class DebtorService extends BaseService<
   }> {
     const debtor = await this.getRepository.findOne({
       where: { id, store: options.where },
+      relations: options.relations,
     });
     return {
       status_code: 200,
       message: 'success',
       data: debtor,
+    };
+  }
+  async delete(
+    id: string,
+  ): Promise<{ status_code: number; message: string; data: {} }> {
+    const debtor = await this.getRepository.findOneBy({ id });
+
+    const data = this.getRepository.delete({ id });
+    return {
+      status_code: 200,
+      message: 'success',
+      data,
     };
   }
 }

@@ -33,6 +33,12 @@ export class DebtDto {
   debt_period: DebtPeriod;
 
   @ApiProperty({
+    description: 'This is name',
+  })
+  @IsNotEmpty()
+  debt_name: string;
+
+  @ApiProperty({
     description: 'The debt amount',
     example: 1500.75,
     type: 'number',
@@ -57,9 +63,8 @@ export class DebtDto {
     example: 'Debt for January 2025',
     required: false,
   })
-  @IsOptional()
   @IsString()
-  description?: string;
+  description: string;
 
   @IsArray()
   @ArrayMinSize(1)

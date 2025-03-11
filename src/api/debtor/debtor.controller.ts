@@ -155,11 +155,11 @@ export class DebtorController {
           .skip(query.skip) // pagination uchun skip
           .take(query.take) // pagination uchun phone_number
           .getMany();
-          return {
-            status_code: 200,
-            message: 'success',
-            data: debtors,
-          }
+        return {
+          status_code: 200,
+          message: 'success',
+          data: debtors,
+        };
       }
     } catch (error) {
       throw Error(error.message);
@@ -179,6 +179,7 @@ export class DebtorController {
   findOne(@Param('id', ParseUUIDPipe) DebtorId: string, @UserID() id: string) {
     return this.debtorService.findOneById(DebtorId, {
       where: { id: id },
+      relations: ['phone_numbers', 'images', 'debts'],
     });
   }
 

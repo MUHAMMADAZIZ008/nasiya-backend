@@ -17,6 +17,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { UserID } from 'src/common/decorator/user-id.decorator';
 
 @ApiBearerAuth()
 @ApiTags('Likes Api')
@@ -57,7 +58,8 @@ export class LikesController {
     },
   })
   @Post()
-  create(@Body() createLikeDto: CreateLikeDto) {
+  create(@Body() createLikeDto: CreateLikeDto, @UserID() storeId: string) {
+    createLikeDto.store = storeId;
     return this.likesService.create(createLikeDto);
   }
 
@@ -158,10 +160,14 @@ export class LikesController {
     },
   })
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.likesService.findOneById(id, {
-      relations: ['store', 'debtor'],
-    });
+  findOne(
+    @Param('id', ParseUUIDPipe) debtorId: string,
+    @UserID() storeId: string,
+  ) {
+    return this.likesService.findOneByCondition(
+      { store: { id: storeId }, debtor: { id: debtorId } }, // TO'G'RI FORMAT
+      { relations: ['store', 'debtor'] },
+    );
   }
 
   @ApiOperation({

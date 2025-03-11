@@ -70,10 +70,11 @@ export class UploadController {
     }),
   )
   uploadFiles(@UploadedFiles() files: Express.Multer.File[]) {
+
     return files.map((file) => ({
       originalname: file.originalname,
       filename: file.filename,
-      path: `http://localhost:3000/static/${file.filename}`,
+      path: `http://localhost:3003/static/${file.filename}`,
     }));
   }
 }

@@ -137,22 +137,22 @@ export class StoreService {
 
   async getPaymentDays(id: string) {
     const days = await this.repository
-    .createQueryBuilder('store')
-    .leftJoinAndSelect('store.debtors', 'debtor')
-    .leftJoinAndSelect('debtor.debts', 'debt')
-    .select('debt.next_payment_date')
-    .where('store.id = :id', { id })
-    .andWhere('debt.debt_status = :status', { status: 'active' })
-    .getRawMany();
+      .createQueryBuilder('store')
+      .leftJoinAndSelect('store.debtors', 'debtor')
+      .leftJoinAndSelect('debtor.debts', 'debt')
+      .select('debt.next_payment_date')
+      .where('store.id = :id', { id })
+      .andWhere('debt.debt_status = :status', { status: 'active' })
+      .getRawMany();
 
     const dates = days.map((i) => {
-      return i.debt_next_payment_date.toISOString().split('T')[0]
+      return i.debt_next_payment_date.toISOString().split('T')[0];
     });
     return {
       status_code: 200,
       message: 'success',
-      dates
-    }
+      dates,
+    };
   }
 
   async findAll(): Promise<{
@@ -194,6 +194,7 @@ export class StoreService {
         id: true,
         login: true,
         wallet: true,
+        full_name: true,
         image: true,
         phone_number: true,
         pin_code: true,
@@ -211,6 +212,26 @@ export class StoreService {
       data: findOneStore,
     };
   }
+
+
+  async findProfile(id: string): Promise<{
+    status_code: number;
+    message: string;
+    data: Store;
+  }> {
+    const findOneStore = await this.repository.findOne({
+      where: { id },
+    });
+    if (!findOneStore) {
+      throw new NotFoundException('Store is not found!');
+    }
+    return {
+      status_code: 200,
+      message: 'success',
+      data: findOneStore,
+    };
+  }
+
 
   async findByLogin(login: string): Promise<{
     status_code: number;

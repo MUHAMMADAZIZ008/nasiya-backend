@@ -76,7 +76,27 @@ export class BaseService<CreateDto, Entity> {
       data,
     };
   }
-
+  async findOneByCondition(
+    where: Partial<Entity>,
+    options?: IFindOptions<Entity>,
+  ) {
+    const data = await this.repository.findOne({
+      select: options?.select || {},
+      relations: options?.relations || [],
+      where, // To'g'ri formatda bo'lishi kerak
+    });
+  
+    if (!data) {
+      throw new HttpException('Not found', 404);
+    }
+  
+    return {
+      status_code: 200,
+      message: 'Success',
+      data,
+    };
+  }
+  
   async update(id: string, dto: Partial<CreateDto>) {
     await this.findOneById(id);
     await this.repository.update(id, {
