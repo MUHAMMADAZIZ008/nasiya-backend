@@ -6,6 +6,7 @@ import { DebtRepository } from 'src/core/repository/index';
 import { DebtDto } from './dto/createDebt-dto';
 import { ImagesOfDebtsService } from '../images_of_debts/images_of_debts.service';
 import { Debt } from 'src/core/entity';
+import { IFindOptions } from 'src/infrastructure/lib/baseService/interface';
 // import { IFindOptions } from 'src/infrastructure/lib/baseService/interface';
 
 @Injectable()
@@ -61,5 +62,23 @@ export class DebtsService extends BaseService<DebtDto, DeepPartial<Debt>> {
     } finally {
       await queryRunner.release();
     }
+  }
+  async findOneById(
+    id: string,
+    options?: IFindOptions<DeepPartial<Debt>>,
+  ): Promise<{
+    status_code: number;
+    message: string;
+    data: DeepPartial<Debt>;
+  }> {
+    const data = await this.getRepository.findOne({
+      where: { id },
+      relations: ['images'],
+    });
+    return {
+      status_code: 200,
+      message: 'success',
+      data,
+    };
   }
 }

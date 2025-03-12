@@ -147,6 +147,7 @@ export class DebtorController {
         const debtors = await this.debtorService.getRepository
           .createQueryBuilder('debtor')
           .leftJoinAndSelect('debtor.phone_numbers', 'phone_numbers_of_debtor') // phone_numbers bilan bog'lash
+          .leftJoinAndSelect('debtor.images', 'images_of_debtor') // images jadvalini qo'shish
           .where('debtor.store = :store', { store: id }) // store sharti
           .andWhere('phone_numbers_of_debtor.phone_number LIKE :search', {
             search: `%${query.search}%`,
