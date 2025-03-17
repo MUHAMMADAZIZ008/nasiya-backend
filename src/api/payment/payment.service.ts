@@ -56,13 +56,15 @@ export class PaymentService extends BaseService<
         : new Date();
       currentDebtDate.setMonth(currentDebtDate.getMonth() + monthCount);
 
-      currentDebt.data.debt_period -= monthCount;
+      if (currentDebt.data.debt_period > 0) {
+        currentDebt.data.debt_period -= monthCount;
 
-      await this.debtsService.update(forMonthPayment.debtId, {
-        next_payment_date: currentDebtDate,
-        debt_sum: currentDebt.data.debt_sum - forMonthPayment.sum,
-        debt_period: currentDebt.data.debt_period,
-      });
+        await this.debtsService.update(forMonthPayment.debtId, {
+          next_payment_date: currentDebtDate,
+          debt_sum: currentDebt.data.debt_sum - forMonthPayment.sum,
+          debt_period: currentDebt.data.debt_period,
+        });
+      }
       return newPayment;
     } catch (error) {
       console.log(error);
@@ -74,59 +76,128 @@ export class PaymentService extends BaseService<
     }
   }
 
+  // async forAnySum(dto: CreatePaymentDto) {
+  //   const currentDebt = await this.debtsService.findOneById(dto.debtId);
+
+  //   if (!currentDebt.data) {
+  //     throw new NotFoundException('Debt Not Found');
+  //   }
+
+  //   if (currentDebt.data.debt_status === 'closed') {
+  //     throw new BadRequestException('Debt Is Closed');
+  //   }
+
+  //   const queryRunner =
+  //     this.getRepository.manager.connection.createQueryRunner();
+
+  //   await queryRunner.connect();
+  //   await queryRunner.startTransaction();
+
+  //   try {
+  //     const newPayment = this.getRepository.create(dto);
+
+  //     const monthlyPayment =
+  //       currentDebt.data.debt_sum / currentDebt.data.debt_period;
+  //     const monthsPaid = Math.floor(newPayment.sum / monthlyPayment);
+
+  //     let nextPaymentDate = new Date(
+  //       currentDebt.data.next_payment_date as string,
+  //     );
+
+  //     if (+currentDebt.data.debt_sum <= newPayment.sum) {
+  //       currentDebt.data.debt_sum = 0;
+  //       currentDebt.data.debt_period = 0;
+  //       currentDebt.data.debt_status = DebtStatus.CLOSED;
+  //     } else {
+  //       currentDebt.data.debt_sum -= newPayment.sum;
+
+  //       if (monthsPaid > 0) {
+  //         nextPaymentDate = addMonths(nextPaymentDate, monthsPaid);
+  //         currentDebt.data.debt_period -= monthsPaid;
+  //         currentDebt.data.next_payment_date = nextPaymentDate
+  //           .toISOString()
+  //           .split('T')[0];
+  //       }
+  //     }
+
+  //     await queryRunner.manager.save(newPayment);
+  //     await queryRunner.manager.update(
+  //       this.debtRepo.target,
+  //       currentDebt.data.id,
+  //       currentDebt.data,
+  //     );
+
+  //     await queryRunner.commitTransaction();
+
+  //     return {
+  //       status_code: 201,
+  //       message: 'success',
+  //       data: newPayment,
+  //     };
+  //   } catch (error) {
+  //     await queryRunner.rollbackTransaction();
+  //     console.error('Transaction Failed:', error);
+  //     throw new BadRequestException('Transaction Failed');
+  //   } finally {
+  //     await queryRunner.release();
+  //   }
+  // }
   async forAnySum(dto: CreatePaymentDto) {
     const currentDebt = await this.debtsService.findOneById(dto.debtId);
-
+  
     if (!currentDebt.data) {
       throw new NotFoundException('Debt Not Found');
     }
-
+  
     if (currentDebt.data.debt_status === 'closed') {
       throw new BadRequestException('Debt Is Closed');
     }
-
-    const queryRunner =
-      this.getRepository.manager.connection.createQueryRunner();
-
+  
+    const queryRunner = this.getRepository.manager.connection.createQueryRunner();
+  
     await queryRunner.connect();
     await queryRunner.startTransaction();
-
+  
     try {
       const newPayment = this.getRepository.create(dto);
-
-      const monthlyPayment =
-        currentDebt.data.debt_sum / currentDebt.data.debt_period;
+  
+      const monthlyPayment = currentDebt.data.debt_sum / currentDebt.data.debt_period;
       const monthsPaid = Math.floor(newPayment.sum / monthlyPayment);
-
-      let nextPaymentDate = new Date(
-        currentDebt.data.next_payment_date as string,
-      );
-
+  
+      let nextPaymentDate = new Date(currentDebt.data.next_payment_date as string);
+  
       if (+currentDebt.data.debt_sum <= newPayment.sum) {
         currentDebt.data.debt_sum = 0;
         currentDebt.data.debt_period = 0;
         currentDebt.data.debt_status = DebtStatus.CLOSED;
       } else {
         currentDebt.data.debt_sum -= newPayment.sum;
-
+  
         if (monthsPaid > 0) {
           nextPaymentDate = addMonths(nextPaymentDate, monthsPaid);
           currentDebt.data.debt_period -= monthsPaid;
-          currentDebt.data.next_payment_date = nextPaymentDate
-            .toISOString()
-            .split('T')[0];
+          currentDebt.data.next_payment_date = nextPaymentDate.toISOString().split('T')[0];
         }
       }
-
+  
       await queryRunner.manager.save(newPayment);
+  
+      // images yoki boshqa one-to-many munosabatlar to‘g‘ridan-to‘g‘ri update qilinmasligi uchun olib tashlanadi
+      delete currentDebt.data.images;
+  
       await queryRunner.manager.update(
         this.debtRepo.target,
         currentDebt.data.id,
-        currentDebt.data,
+        {
+          debt_sum: currentDebt.data.debt_sum,
+          debt_period: currentDebt.data.debt_period,
+          debt_status: currentDebt.data.debt_status,
+          next_payment_date: currentDebt.data.next_payment_date,
+        }
       );
-
+  
       await queryRunner.commitTransaction();
-
+  
       return {
         status_code: 201,
         message: 'success',
@@ -140,4 +211,5 @@ export class PaymentService extends BaseService<
       await queryRunner.release();
     }
   }
+  
 }
